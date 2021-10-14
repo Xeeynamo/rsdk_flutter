@@ -16,8 +16,8 @@ class StagePainter extends widgets.CustomPainter {
     final sizeWidth = (size.width + chunkSize * 2 - 1) ~/ chunkSize;
     final yMod = offset.dy ~/ chunkSize;
     final xMod = offset.dx ~/ chunkSize;
-    final yOff = offset.dy % chunkSize;
-    final xOff = offset.dx % chunkSize;
+    final yOff = offset.dy.remainder(chunkSize);
+    final xOff = offset.dx.remainder(chunkSize);
     for (var y = 0; y < sizeHeight && (yMod + y) < _stage.act.height; y++) {
       if (yMod + y < 0) continue;
       for (var x = 0; x < sizeWidth && (xMod + x) < _stage.act.width; x++) {
