@@ -10,6 +10,7 @@ class BackgroundView extends StatefulWidget {
   const BackgroundView({Key? key, required this.stage}) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   State<StatefulWidget> createState() => _BackgroundViewState(stage);
 }
 

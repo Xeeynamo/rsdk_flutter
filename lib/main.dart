@@ -94,6 +94,11 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<void> _openRsdkGame() async {
+    final rootPath = await FilePicker.platform
+        .getDirectoryPath(dialogTitle: "Select RSDK's 'Data' folder");
+    if (rootPath == null) {
+      return; // user canceled pick
+    }
 
     dataPath = rootPath;
     final gameConfigFile = File(path.join(dataPath, "Game/GameConfig.bin"));
@@ -106,10 +111,10 @@ class _MainViewState extends State<MainView> {
   }
 
   void _closeRsdkGame() => setState(() {
-      _gameConfig = null;
-      _selectedGameStage = null;
-      _selectedStage = null;
-    });
+        _gameConfig = null;
+        _selectedGameStage = null;
+        _selectedStage = null;
+      });
 
   Future<void> readGameConfig(File file) async {
     final gameConfig = GameConfigV4(file);
@@ -194,85 +199,85 @@ class _MainViewState extends State<MainView> {
 
     final gameControls = _gameConfig != null
         ? [
-      ExpansionTile(
-          title: const Text("Presentation stages"),
-          leading: const Icon(Icons.aspect_ratio),
-          trailing: const Icon(Icons.arrow_drop_down),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: _showPresentationStages()),
-      ExpansionTile(
-          title: const Text("Regular stages"),
-          leading: const Icon(Icons.aspect_ratio),
-          trailing: const Icon(Icons.arrow_drop_down),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: _showRegularStages()),
-      ExpansionTile(
-          title: const Text("Special stages"),
-          leading: const Icon(Icons.aspect_ratio),
-          trailing: const Icon(Icons.arrow_drop_down),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: _showSpecialStages()),
-      ExpansionTile(
-          title: const Text("Bonus stages"),
-          leading: const Icon(Icons.aspect_ratio),
-          trailing: const Icon(Icons.arrow_drop_down),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: _showBonusStages()),
-      const Divider(height: 20),
-      ListTile(
+            ExpansionTile(
+                title: const Text("Presentation stages"),
+                leading: const Icon(Icons.aspect_ratio),
+                trailing: const Icon(Icons.arrow_drop_down),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: _showPresentationStages()),
+            ExpansionTile(
+                title: const Text("Regular stages"),
+                leading: const Icon(Icons.aspect_ratio),
+                trailing: const Icon(Icons.arrow_drop_down),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: _showRegularStages()),
+            ExpansionTile(
+                title: const Text("Special stages"),
+                leading: const Icon(Icons.aspect_ratio),
+                trailing: const Icon(Icons.arrow_drop_down),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: _showSpecialStages()),
+            ExpansionTile(
+                title: const Text("Bonus stages"),
+                leading: const Icon(Icons.aspect_ratio),
+                trailing: const Icon(Icons.arrow_drop_down),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: _showBonusStages()),
+            const Divider(height: 20),
+            ListTile(
                 title: const Text("Global objects"),
-          leading: const Icon(Icons.auto_awesome_motion),
-          enabled: false,
-          onTap: _showGameObjects),
-      ListTile(
-          title: const Text("Variables"),
-          leading: const Icon(Icons.auto_awesome),
-          enabled: false,
-          onTap: _showGameVariables),
-      ListTile(
-          title: const Text("Sound effects"),
-          leading: const Icon(Icons.volume_up),
-          enabled: false,
-          onTap: _showGameSoundEffects),
-      ListTile(
-          title: const Text("Players"),
-          leading: const Icon(Icons.contact_page),
-          enabled: false,
-          onTap: _showGamePlayers),
-      ListTile(
-          title: const Text("Animations"),
-          leading: const Icon(Icons.burst_mode),
-          enabled: false,
-          onTap: _showAnimations),
-      const Divider(height: 20),
+                leading: const Icon(Icons.auto_awesome_motion),
+                enabled: false,
+                onTap: _showGameObjects),
+            ListTile(
+                title: const Text("Variables"),
+                leading: const Icon(Icons.auto_awesome),
+                enabled: false,
+                onTap: _showGameVariables),
+            ListTile(
+                title: const Text("Sound effects"),
+                leading: const Icon(Icons.volume_up),
+                enabled: false,
+                onTap: _showGameSoundEffects),
+            ListTile(
+                title: const Text("Players"),
+                leading: const Icon(Icons.contact_page),
+                enabled: false,
+                onTap: _showGamePlayers),
+            ListTile(
+                title: const Text("Animations"),
+                leading: const Icon(Icons.burst_mode),
+                enabled: false,
+                onTap: _showAnimations),
+            const Divider(height: 20),
           ]
         : List<Widget>.empty();
 
     final stageControls = _selectedGameStage != null
         ? [
-      ListTile(
-          title: const Text("Layout"),
-          leading: const Icon(Icons.grid_on),
+            ListTile(
+                title: const Text("Layout"),
+                leading: const Icon(Icons.grid_on),
                 selected: _viewType == _ViewType.layout,
-          onTap: _showStageLayout),
-      ListTile(
-          title: const Text("Background"),
-          leading: const Icon(Icons.landscape),
+                onTap: _showStageLayout),
+            ListTile(
+                title: const Text("Background"),
+                leading: const Icon(Icons.landscape),
                 selected: _viewType == _ViewType.background,
-          onTap: _showStageBackground),
-      ListTile(
-          title: const Text("Objects"),
-          leading: const Icon(Icons.library_books),
+                onTap: _showStageBackground),
+            ListTile(
+                title: const Text("Objects"),
+                leading: const Icon(Icons.library_books),
                 selected: _viewType == _ViewType.objects,
-          enabled: false,
-          onTap: _showStageObjects),
-      ListTile(
-          title: const Text("Chunks"),
-          leading: const Icon(Icons.grid_view),
+                enabled: false,
+                onTap: _showStageObjects),
+            ListTile(
+                title: const Text("Chunks"),
+                leading: const Icon(Icons.grid_view),
                 selected: _viewType == _ViewType.chunks,
-          enabled: false,
-          onTap: _showStageChunks),
-      const Divider(height: 20),
+                enabled: false,
+                onTap: _showStageChunks),
+            const Divider(height: 20),
           ]
         : List<Widget>.empty();
 

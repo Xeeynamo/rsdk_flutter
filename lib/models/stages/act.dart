@@ -3,7 +3,7 @@ import 'dart:io';
 import '../reader.dart';
 
 class ActV4 {
-  static const int MaxLayerCount = 5;
+  static const int _maxLayerCount = 5;
   final File _file;
 
   String title = "";
@@ -20,7 +20,7 @@ class ActV4 {
   Future<void> load() async {
     final reader = Reader(await _file.readAsBytes());
     title = reader.readRsdkString();
-    layers = reader.read(MaxLayerCount);
+    layers = reader.read(_maxLayerCount);
     _width = reader.readShort();
     _height = reader.readShort();
     _layout = List.generate(
