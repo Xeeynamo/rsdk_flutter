@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:rsdk_flutter/levelview.dart';
+import 'package:rsdk_flutter/models/gamestage.dart';
 import 'models/gameconfig.dart';
 import 'models/stages/stage.dart';
 
@@ -55,8 +56,9 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   GameConfigV4? _gameConfig;
-  LevelView? _levelView;
   String dataPath = "";
+  GameStage? _selectedGameStage;
+  Stage? _selectedStage;
 
   Future<void> showError(String msg) async {
     return showDialog<void>(
@@ -85,12 +87,7 @@ class _MainViewState extends State<MainView> {
     );
   }
 
-  Future<void> pickGameConfig() async {
-    final rootPath = await FilePicker.platform
-        .getDirectoryPath(dialogTitle: "Select RSDK's 'Data' folder");
-    if (rootPath == null) {
-      return; // user canceled pick
-    }
+  Future<void> _openRsdkGame() async {
 
     dataPath = rootPath;
     final gameConfigFile = File(path.join(dataPath, "Game/GameConfig.bin"));
@@ -102,16 +99,18 @@ class _MainViewState extends State<MainView> {
     await readGameConfig(gameConfigFile);
   }
 
+  void _closeRsdkGame() => setState(() {
+      _gameConfig = null;
+      _selectedGameStage = null;
+      _selectedStage = null;
+    });
+
   Future<void> readGameConfig(File file) async {
     final gameConfig = GameConfigV4(file);
     await gameConfig.read();
 
-    final stage = Stage(dataPath, gameConfig, gameConfig.stagesRegular[0]);
-    await stage.load();
-
     setState(() {
       _gameConfig = gameConfig;
-      _levelView = LevelView(stage: stage);
     });
   }
 
@@ -129,16 +128,201 @@ class _MainViewState extends State<MainView> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
+      drawer: Drawer(
+        child: ListView(
+          children: _buildDrawerMenu(),
+        ),
+      ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: _levelView ?? const Text("no level selected"),
+        child: _selectedStage != null
+            ? LevelView(key: UniqueKey(), stage: _selectedStage!)
+            : const Text("Welcome to RSDK Editor!",
+                style: TextStyle(fontSize: 20)),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: pickGameConfig,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () async {
+          await _openRsdkGame();
+          _setSelectedStage(_gameConfig!.stagesRegular[0]);
+        },
+        tooltip: 'For debugging purposes',
+        child: const Icon(Icons.bug_report_outlined),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  List<Widget> _buildDrawerMenu() {
+    final defaultControls = [
+      ListTile(
+          title: const Text("Open game"),
+          leading: const Icon(Icons.folder_open),
+          onTap: _openRsdkGame),
+      ListTile(
+          title: const Text('Close game'),
+          leading: const Icon(Icons.bug_report),
+          onTap: _closeRsdkGame),
+      ListTile(
+          title: const Text('Settings'),
+          leading: const Icon(Icons.settings),
+          enabled: false,
+          onTap: _showSettings),
+    ];
+
+    final headerControls = [
+      DrawerHeader(
+          decoration: const BoxDecoration(
+            color: Colors.blue,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _gameConfig?.name ?? "No RSDK loaded",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+              _buildStageNameTitle()
+            ],
+          )),
+    ];
+
+    final gameControls = _gameConfig != null
+        ? [
+      ExpansionTile(
+          title: const Text("Presentation stages"),
+          leading: const Icon(Icons.aspect_ratio),
+          trailing: const Icon(Icons.arrow_drop_down),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          children: _showPresentationStages()),
+      ExpansionTile(
+          title: const Text("Regular stages"),
+          leading: const Icon(Icons.aspect_ratio),
+          trailing: const Icon(Icons.arrow_drop_down),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          children: _showRegularStages()),
+      ExpansionTile(
+          title: const Text("Special stages"),
+          leading: const Icon(Icons.aspect_ratio),
+          trailing: const Icon(Icons.arrow_drop_down),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          children: _showSpecialStages()),
+      ExpansionTile(
+          title: const Text("Bonus stages"),
+          leading: const Icon(Icons.aspect_ratio),
+          trailing: const Icon(Icons.arrow_drop_down),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          children: _showBonusStages()),
+      const Divider(height: 20),
+      ListTile(
+                title: const Text("Global objects"),
+          leading: const Icon(Icons.auto_awesome_motion),
+          enabled: false,
+          onTap: _showGameObjects),
+      ListTile(
+          title: const Text("Variables"),
+          leading: const Icon(Icons.auto_awesome),
+          enabled: false,
+          onTap: _showGameVariables),
+      ListTile(
+          title: const Text("Sound effects"),
+          leading: const Icon(Icons.volume_up),
+          enabled: false,
+          onTap: _showGameSoundEffects),
+      ListTile(
+          title: const Text("Players"),
+          leading: const Icon(Icons.contact_page),
+          enabled: false,
+          onTap: _showGamePlayers),
+      ListTile(
+          title: const Text("Animations"),
+          leading: const Icon(Icons.burst_mode),
+          enabled: false,
+          onTap: _showAnimations),
+      const Divider(height: 20),
+          ]
+        : List<Widget>.empty();
+
+    final stageControls = _selectedGameStage != null
+        ? [
+      ListTile(
+          title: const Text("Layout"),
+          leading: const Icon(Icons.grid_on),
+          selected: true,
+          onTap: _showStageLayout),
+      ListTile(
+          title: const Text("Background"),
+          leading: const Icon(Icons.landscape),
+          enabled: false,
+          onTap: _showStageBackground),
+      ListTile(
+          title: const Text("Objects"),
+          leading: const Icon(Icons.library_books),
+          enabled: false,
+          onTap: _showStageObjects),
+      ListTile(
+          title: const Text("Chunks"),
+          leading: const Icon(Icons.grid_view),
+          enabled: false,
+          onTap: _showStageChunks),
+      const Divider(height: 20),
+          ]
+        : List<Widget>.empty();
+
+    return [headerControls, stageControls, gameControls, defaultControls]
+        .expand((element) => element)
+        .toList();
+  }
+
+  Widget _buildStageNameTitle() => _selectedGameStage == null
+      ? const SizedBox.shrink()
+      : Text(_selectedGameStage!.name);
+
+  List<Widget> _buildStageNames(List<GameStage> stages) => stages
+      .map((stage) => ListTile(
+          title: Text(stage.name), onTap: () => _setSelectedStage(stage)))
+      .toList();
+
+  void _showStageLayout() {}
+
+  void _showStageBackground() {}
+
+  void _showStageObjects() {}
+
+  void _showStageChunks() {}
+
+  List<Widget> _showPresentationStages() =>
+      _buildStageNames(_gameConfig!.stagesPresentation);
+
+  List<Widget> _showRegularStages() =>
+      _buildStageNames(_gameConfig!.stagesRegular);
+
+  List<Widget> _showSpecialStages() =>
+      _buildStageNames(_gameConfig!.stagesSpecial);
+
+  List<Widget> _showBonusStages() => _buildStageNames(_gameConfig!.stagesBonus);
+
+  void _showGameObjects() {}
+
+  void _showGameVariables() {}
+
+  void _showGameSoundEffects() {}
+
+  void _showGamePlayers() {}
+
+  void _showAnimations() {}
+
+  void _showSettings() {}
+
+  _setSelectedStage(GameStage gameStage) {
+    var stage = Stage(dataPath, _gameConfig!, gameStage);
+    return stage.load().whenComplete(() => {
+          setState(() {
+            _selectedGameStage = gameStage;
+            _selectedStage = stage;
+          })
+        });
   }
 }

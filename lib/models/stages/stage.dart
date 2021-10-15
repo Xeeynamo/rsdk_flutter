@@ -52,12 +52,10 @@ class Stage {
     act = ActV4(actFile);
   }
 
-  Future<void> load() {
-    return Future.wait([
-      _generateChunks(),
-      act.load(),
-    ]);
-  }
+  Future<void> load() => Future.wait([
+        _generateChunks(),
+        act.load(),
+      ]);
 
   Future<void> _generateChunks() async {
     final codec = await instantiateImageCodec(await gfxFile.readAsBytes());
