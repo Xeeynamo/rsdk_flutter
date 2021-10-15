@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
+import 'package:rsdk_flutter/backgroundview.dart';
 import 'package:rsdk_flutter/levelview.dart';
 import 'package:rsdk_flutter/models/gamestage.dart';
 import 'models/gameconfig.dart';
@@ -54,11 +55,16 @@ class MainView extends StatefulWidget {
   State<MainView> createState() => _MainViewState();
 }
 
+enum _ViewType { layout, background, objects, chunks }
+
 class _MainViewState extends State<MainView> {
   GameConfigV4? _gameConfig;
   String dataPath = "";
   GameStage? _selectedGameStage;
   Stage? _selectedStage;
+  _ViewType _viewType = _ViewType.layout;
+
+  set viewType(_ViewType value) => setState(() => _viewType = value);
 
   Future<void> showError(String msg) async {
     return showDialog<void>(
@@ -136,10 +142,7 @@ class _MainViewState extends State<MainView> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: _selectedStage != null
-            ? LevelView(key: UniqueKey(), stage: _selectedStage!)
-            : const Text("Welcome to RSDK Editor!",
-                style: TextStyle(fontSize: 20)),
+        child: _buildView(context),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -250,21 +253,23 @@ class _MainViewState extends State<MainView> {
       ListTile(
           title: const Text("Layout"),
           leading: const Icon(Icons.grid_on),
-          selected: true,
+                selected: _viewType == _ViewType.layout,
           onTap: _showStageLayout),
       ListTile(
           title: const Text("Background"),
           leading: const Icon(Icons.landscape),
-          enabled: false,
+                selected: _viewType == _ViewType.background,
           onTap: _showStageBackground),
       ListTile(
           title: const Text("Objects"),
           leading: const Icon(Icons.library_books),
+                selected: _viewType == _ViewType.objects,
           enabled: false,
           onTap: _showStageObjects),
       ListTile(
           title: const Text("Chunks"),
           leading: const Icon(Icons.grid_view),
+                selected: _viewType == _ViewType.chunks,
           enabled: false,
           onTap: _showStageChunks),
       const Divider(height: 20),
@@ -285,13 +290,36 @@ class _MainViewState extends State<MainView> {
           title: Text(stage.name), onTap: () => _setSelectedStage(stage)))
       .toList();
 
-  void _showStageLayout() {}
+  Widget _buildView(BuildContext context) {
+    if (_gameConfig == null) {
+      return const Text("Welcome to RSDK Editor!",
+          style: TextStyle(fontSize: 20));
+    }
+    
+    if (_selectedGameStage == null) {
+      return const Text("Select a stage or any game settings to start.",
+          style: TextStyle(fontSize: 20));
+    }
 
-  void _showStageBackground() {}
+    switch (_viewType) {
+      case _ViewType.layout:
+        return LevelView(key: UniqueKey(), stage: _selectedStage!);
+      case _ViewType.background:
+        return BackgroundView(key: UniqueKey(), stage: _selectedStage!);
+      case _ViewType.objects:
+        return const Text("objects");
+      case _ViewType.chunks:
+        return const Text("chunks");
+    }
+  }
 
-  void _showStageObjects() {}
+  void _showStageLayout() => viewType = _ViewType.layout;
 
-  void _showStageChunks() {}
+  void _showStageBackground() => viewType = _ViewType.background;
+
+  void _showStageObjects() => viewType = _ViewType.objects;
+
+  void _showStageChunks() => viewType = _ViewType.chunks;
 
   List<Widget> _showPresentationStages() =>
       _buildStageNames(_gameConfig!.stagesPresentation);

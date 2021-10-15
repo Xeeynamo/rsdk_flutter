@@ -6,6 +6,7 @@ import 'package:path/path.dart' as path;
 import 'package:rsdk_flutter/models/gameconfig.dart';
 import 'package:rsdk_flutter/models/gamestage.dart';
 import 'package:rsdk_flutter/models/stages/act.dart';
+import 'package:rsdk_flutter/models/stages/background.dart';
 
 class Stage {
   static const chunkSize = 128;
@@ -39,6 +40,7 @@ class Stage {
 
   List<Image> chunksImage = List.empty();
   late final ActV4 act;
+  late final BackgroundV4 background;
 
   Stage(this.dataPath, this.config, this.stage) {
     stagePath = path.join(dataPath, "Stages/", stage.path);
@@ -50,11 +52,13 @@ class Stage {
     collisionFile = File(path.join(stagePath, "CollisionMasks.bin"));
 
     act = ActV4(actFile);
+    background = BackgroundV4(bgFile);
   }
 
   Future<void> load() => Future.wait([
         _generateChunks(),
         act.load(),
+        background.load(),
       ]);
 
   Future<void> _generateChunks() async {

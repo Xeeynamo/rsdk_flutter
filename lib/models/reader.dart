@@ -5,6 +5,8 @@ class Reader {
   final Uint8List data;
   int offset = 0;
 
+  int get length => data.length;
+
   Reader(this.data);
 
   List<int> read(int length) {
