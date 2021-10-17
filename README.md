@@ -8,4 +8,4 @@ Using Flutter as a framework allows this editor to run on any major existing pla
 
 ## Download
 
-Right now there are no pre-built executables as it is in a prototype stage, even if correctly working. To run it locally, [install Flutter](https://flutter.dev/docs/get-started/install) and then just run the command `flutter run`. Pre-built executables for the various operating systems will come at some point once I will set-up a CI/CD pipeline with GitHub Actions.
+Please refer to [GitHub releases](https://github.com/Xeeynamo/rsdk_flutter/releases) to download the version specific to your platform.
